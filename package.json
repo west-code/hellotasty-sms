@@ -1,6 +1,8 @@
 {
   "name": "hellotasty-sms",
   "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
   "dependencies": {
     "twilio": "^4.0.0"
   }
