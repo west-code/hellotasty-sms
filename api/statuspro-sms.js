@@ -1,65 +1,70 @@
-import { NextResponse } from "next/server";
-import twilio from "twilio";
+const twilio = require("twilio");
 
-export async function POST(request) {
+module.exports = async (req, res) => {
   try {
-    const body = await request.json();
+    // Parse JSON body
+    const body = req.body || {};
 
-    // Extract the new StatusPro status
+    // Get StatusPro new status
     const status = body?.status?.new_status;
 
-    // Customer phone is NOT in your payload yet; must enable it in StatusPro webhook settings
-    let customerPhone = body?.customer?.phone 
-                         || body?.customer?.default_address?.phone 
-                         || body?.order?.shipping_address?.phone 
-                         || null;
+    // Extract phone number (StatusPro must be configured to include it)
+    let customerPhone =
+      body?.customer?.phone ||
+      body?.customer?.default_address?.phone ||
+      body?.order?.shipping_address?.phone ||
+      null;
 
     if (!customerPhone) {
-      return NextResponse.json({ error: "No customer phone passed from StatusPro" }, { status: 400 });
+      return res.status(400).json({
+        error: "No customer phone passed from StatusPro",
+      });
     }
 
-    // Twilio Credentials from Environment Variables
+    // Twilio Credentials
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const client = twilio(accountSid, authToken);
 
-    // Determine correct sender ID
+    // Determine sender ID
     let fromSender = "HELLOTASTY"; // Nigeria only
-
     if (customerPhone.startsWith("+44")) {
-      fromSender = process.env.TWILIO_PHONE_NUMBER; // UK uses real phone number
+      fromSender = process.env.TWILIO_PHONE_NUMBER; // UK requires real number
     }
 
-    // Status-based SMS message
+    // Status-based message
     let message = "";
 
     if (status === "osp: prepared") {
       message = "Your Hello Tasty order is being prepared 🍲❤️";
     }
-
     if (status === "osp: ofd") {
       message = "Your Hello Tasty rider is on the way 🚴💨";
     }
-
     if (status === "osp: delivered") {
-      message = "Your order has been delivered. Enjoy! 🎉🍽️";
+      message = "Your order has been delivered 🎉🍽️ Enjoy your meal!";
     }
 
     if (!message) {
-      return NextResponse.json({ error: `Unknown status '${status}'. No SMS sent.` }, { status: 400 });
+      return res.status(400).json({
+        error: `Unknown status '${status}'. No SMS sent.`,
+      });
     }
 
-    // Send SMS via Twilio
+    // Send Twilio SMS
     await client.messages.create({
       body: message,
       from: fromSender,
-      to: customerPhone
+      to: customerPhone,
     });
 
-    return NextResponse.json({ success: true, sent_to: customerPhone, status });
-
-  } catch (error) {
-    console.error("SMS Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return res.status(200).json({
+      success: true,
+      sent_to: customerPhone,
+      status,
+    });
+  } catch (err) {
+    console.error("SMS ERROR:", err);
+    return res.status(500).json({ error: err.message });
   }
-}
+};
