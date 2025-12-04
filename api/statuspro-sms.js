@@ -25,13 +25,13 @@ export async function POST(request) {
     // CUSTOM STATUS → MESSAGE matching
     let message = "";
 
-    if (status === "prepared" || status === "sp-prepared") {
+    if (status === "prepared" || status === "osp: prepared") {
       message = "Your Hello Tasty order is being prepared 🍲❤️";
     }
-    if (status === "ofd" || status === "sp-ofd") {
+    if (status === "ofd" || status === "osp: ofd") {
       message = "Your Hello Tasty rider is on the way 🚴💨";
     }
-    if (status === "delivered" || status === "sp-delivered") {
+    if (status === "delivered" || status === "osp: delivered") {
       message = "Your order has been delivered. Enjoy! 🎉🍽️";
     }
 
