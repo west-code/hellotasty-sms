@@ -33,15 +33,15 @@ export async function POST(request) {
     // Status-based SMS message
     let message = "";
 
-    if (status === "osp: prepared") {
+    if (status === "prepared") {
       message = "Your Hello Tasty order is being prepared 🍲❤️";
     }
 
-    if (status === "osp: ofd") {
+    if (status === "ofd") {
       message = "Your Hello Tasty rider is on the way 🚴💨";
     }
 
-    if (status === "osp: delivered") {
+    if (status === "delivered") {
       message = "Your order has been delivered. Enjoy! 🎉🍽️";
     }
 
